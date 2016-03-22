@@ -44,19 +44,111 @@ func (tr *TestRunner) RunTest(test *models.Block, app *models.App) (*models.Test
 		return nil, err
 	}
 
-	return &models.TestResult{Pass: pass}, nil
+	var actions []string
+	if pass {
+		actions = processTriggerPass(test.Next)
+	} else {
+		actions = processTriggerFail(test.Next)
+	}
+
+	return &models.TestResult{Pass: pass, Actions: actions}, nil
+}
+
+func processTriggerPass(trigger *models.Block) []string {
+	return processTrigger(trigger, "trigger_pass")
+}
+
+func processTriggerFail(trigger *models.Block) []string {
+	return processTrigger(trigger, "trigger_fail")
+}
+
+func processTrigger(trigger *models.Block, triggerType string) []string {
+	var actions []string
+	for ; trigger != nil; trigger = trigger.Next {
+		if trigger.Type == triggerType {
+			action := trigger.Value
+
+			if action.Type == "action_say" {
+				actions = append(actions, action.Field[0])
+			}
+		}
+	}
+
+	return actions
 }
 
 func sprite(test *models.Block, app *models.App) (bool, error) {
-	return false, nil
+	spriteName := test.Field[0]
+
+	assertion := test.Value
+	should := assertion.Type == "assert_should"
+
+	matcher := assertion.Value
+
+	if matcher.Type == "matcher_be_present" {
+		log.Printf("Looking for sprite %q", spriteName)
+
+		sprite := getSprite(spriteName, app)
+
+		if should {
+			return sprite != nil, nil
+		}
+
+		return sprite == nil, nil
+	}
+
+	return false, fmt.Errorf("Matcher type %q not found", matcher.Type)
 }
 
 func spriteTouchColor(test *models.Block, app *models.App) (bool, error) {
-	return false, nil
+	spriteName := test.Field[0]
+	color := test.Field[1]
+
+	assertion := test.Value
+	should := assertion.Type == "assert_should"
+
+	matcher := assertion.Value
+
+	if matcher.Type == "matcher_move_steps" {
+		stepCount := matcher.Field[0]
+
+		colorCode := 0
+		if color == "red" {
+			colorCode = -15399425
+		}
+
+		command := fmt.Sprintf("doIf touchingColor: %d forward: %d", colorCode, stepCount)
+
+		return findCommand(command, spriteName, should, app), nil
+	}
+
+	return false, fmt.Errorf("Matcher type %q not found", matcher.Type)
 }
 
 func spriteTouchSprite(test *models.Block, app *models.App) (bool, error) {
-	return false, nil
+	sprite1 := test.Field[0]
+	sprite2 := test.Field[1]
+
+	assertion := test.Value
+	should := assertion.Type == "assert_should"
+
+	matcher := assertion.Value
+
+	if matcher.Type == "matcher_say" {
+		say := matcher.Field[0]
+
+		command := fmt.Sprintf("touching: %s say:duration:elapsed:from: %s", sprite2, say)
+		found := findCommand(command, sprite1, should, app)
+
+		if found {
+			return true, nil
+		}
+
+		command = fmt.Sprintf("touching: %s say:duration:elapsed:from: %s", sprite1, say)
+		return findCommand(command, sprite2, should, app), nil
+	}
+
+	return false, fmt.Errorf("Matcher type %q not found", matcher.Type)
 }
 
 func whenKeyPressed(test *models.Block, app *models.App) (bool, error) {
@@ -86,7 +178,6 @@ func whenKeyPressed(test *models.Block, app *models.App) (bool, error) {
 		}
 
 		command := fmt.Sprintf("whenKeyPressed %s heading: %d", keyPressed, heading)
-		log.Printf("Test command: %q, Sprite: %q, Should: %v", command, sprite, should)
 
 		return findCommand(command, sprite, should, app), nil
 	}
@@ -95,6 +186,8 @@ func whenKeyPressed(test *models.Block, app *models.App) (bool, error) {
 }
 
 func findCommand(command string, spriteName string, should bool, app *models.App) bool {
+	log.Printf("Looking for command %q in sprite %q with should %v", command, spriteName, should)
+
 	sprite := getSprite(spriteName, app)
 	if sprite == nil {
 		return false

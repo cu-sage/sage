@@ -35,7 +35,7 @@
    <block type="expect" id="/a{Ju%@]l))l@@,Xa?.p" x="113" y="-162">
       <value name="NAME">
          <block type="actual_sprite" id="BE=bo+A8+z)M?N9]32v.">
-            <field name="NAME">Finish</field>
+            <field name="NAME">Goal</field>
             <value name="actual">
                <block type="assert_should" id="[`7[}]6+}9R|Q(RMx6M;">
                   <value name="matcher">
@@ -58,7 +58,7 @@
    <block type="expect" id="M)tVY:-dp=Z8ofvJwx8q" x="113" y="-62">
       <value name="NAME">
          <block type="actual_key_pressed" id="5JI(x,DZt=Q~y^I[@=0,">
-            <field name="key_pressed">w</field>
+            <field name="key_pressed">up arrow</field>
             <field name="key_sprite">Ball</field>
             <value name="assert">
                <block type="assert_should" id="BW+MsjZ^ak;*8iOyk`R_">
@@ -84,7 +84,7 @@
    <block type="expect" id="z+Mr~fRbX8g6%!~sR@j3" x="113" y="13">
       <value name="NAME">
          <block type="actual_key_pressed" id="V_NX2c5mKHBsUY:mbHAS">
-            <field name="key_pressed">a</field>
+            <field name="key_pressed">left arrow</field>
             <field name="key_sprite">Ball</field>
             <value name="assert">
                <block type="assert_should" id="Mz87#XACc/O!;B^#*,rs">
@@ -110,7 +110,7 @@
    <block type="expect" id="s@/dT8}!Z;pP.d#XrI(`" x="113" y="88">
       <value name="NAME">
          <block type="actual_key_pressed" id="ORB+WwW:6tUIEQX]H5X#">
-            <field name="key_pressed">s</field>
+            <field name="key_pressed">down arrow</field>
             <field name="key_sprite">Ball</field>
             <value name="assert">
                <block type="assert_should" id="D@!gCe=p{gpY)0syt82s">
@@ -189,7 +189,7 @@
       <value name="NAME">
          <block type="actual_sprite_touch_sprite" id="K4]Q(vSfeg)fHyq2mPBV">
             <field name="key_sprite_1">Ball</field>
-            <field name="key_sprite_2">Finish</field>
+            <field name="key_sprite_2">Goal</field>
             <value name="assert">
                <block type="assert_should" id="7H_Vdz5+aAHg0K4esZvb">
                   <value name="matcher">

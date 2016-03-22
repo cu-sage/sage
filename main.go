@@ -25,6 +25,10 @@ func main() {
 			log.Printf("Error running test: %s", err.Error())
 		}
 
-		log.Printf("Test Result: %+v", result)
+		log.Printf("Pass: %+v", result.Pass)
+		for _, action := range result.Actions {
+			log.Printf("Action: %s\n", action)
+		}
+		log.Println()
 	}
 }
