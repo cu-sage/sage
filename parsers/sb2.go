@@ -2,34 +2,14 @@ package parsers
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"strconv"
 
 	"bitbucket.org/sage/models"
 	"bitbucket.org/sage/utils"
 )
 
-type SB2Project struct {
-	Children []struct {
-		ObjName string          `json:"objName"`
-		Scripts [][]interface{} `json:"scripts"`
-	} `json:"children"`
-}
-
-func ParseSB2(path string) (*models.App, error) {
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var project SB2Project
-	err = json.Unmarshal(file, &project)
-	if err != nil {
-		return nil, err
-	}
-
+func ParseSB2(project models.SB2Project) (*models.App, error) {
 	app := models.NewApp()
 	for _, child := range project.Children {
 		sprite := models.NewSprite(child.ObjName)

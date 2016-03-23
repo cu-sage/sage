@@ -1,6 +1,7 @@
 # Tests
 Goal
 whenGreenFlag doWaitUntil touching: Ball say:duration:elapsed:from: You win! 2
+                          touching: Ball say:duration:elapsed:from: You win!
 
 Ball
 whenGreenFlag gotoX:y: -205 147 doForever doIf touchingColor: -15399425 forward: -10
