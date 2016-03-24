@@ -9,6 +9,8 @@ func RegisterHandlers(a *Assessment) *mux.Router {
 		Methods("POST")
 	r.HandleFunc("/project", a.PostProject).
 		Methods("POST")
+	r.HandleFunc("/project/{projectID}/assessment/{assessmentID}", a.GetAssessment).
+		Methods("GET")
 
 	return r
 }

@@ -3,6 +3,7 @@ package models
 import "fmt"
 
 type TestSuite struct {
+	ID        string
 	TestCases []*Block `xml:"block"`
 }
 

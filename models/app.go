@@ -3,6 +3,7 @@ package models
 import "fmt"
 
 type App struct {
+	ID      string
 	Sprites []*Sprite
 }
 
