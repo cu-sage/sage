@@ -1,52 +1,73 @@
 package repositories
 
 import (
-	"fmt"
+	"log"
+
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"bitbucket.org/sage/models"
 	"github.com/satori/go.uuid"
 )
 
 type Repository struct {
-	appsMap map[string]*models.App
-	tsMap   map[string]*models.TestSuite
+	session *mgo.Session
 }
 
-func NewRepository() *Repository {
+func NewRepository(session *mgo.Session) *Repository {
 	return &Repository{
-		appsMap: make(map[string]*models.App),
-		tsMap:   make(map[string]*models.TestSuite),
+		session: session,
 	}
 }
 
 func (r *Repository) SaveApp(app *models.App) error {
 	app.ID = uuid.NewV4().String()
-	r.appsMap[app.ID] = app
 
-	return nil
+	s := r.session.Copy()
+	c := s.DB(dbName).C(projectCollection)
+	defer s.Close()
+
+	err := c.Insert(app)
+	if err != nil {
+		log.Printf("Error inserting project: %s\n", err.Error())
+	}
+
+	return err
 }
 
 func (r *Repository) SaveAssessment(ts *models.TestSuite) error {
 	ts.ID = uuid.NewV4().String()
-	r.tsMap[ts.ID] = ts
 
-	return nil
+	s := r.session.Copy()
+	c := s.DB(dbName).C(assessmentCollection)
+	defer s.Close()
+
+	err := c.Insert(ts)
+	if err != nil {
+		log.Printf("Error inserting assessment: %s\n", err.Error())
+	}
+
+	return err
 }
 
 func (r *Repository) GetApp(id string) (models.App, error) {
-	app, prs := r.appsMap[id]
-	if !prs {
-		return models.App{}, fmt.Errorf("Project %q not found", id)
-	}
+	s := r.session.Copy()
+	c := s.DB(dbName).C(projectCollection)
+	defer s.Close()
 
-	return *app, nil
+	var result models.App
+	err := c.Find(bson.M{"id": id}).One(&result)
+
+	return result, err
 }
 
 func (r *Repository) GetAssessment(id string) (models.TestSuite, error) {
-	assessment, prs := r.tsMap[id]
-	if !prs {
-		return models.TestSuite{}, fmt.Errorf("Assessment %q not found", id)
-	}
+	s := r.session.Copy()
+	c := s.DB(dbName).C(assessmentCollection)
+	defer s.Close()
 
-	return *assessment, nil
+	var result models.TestSuite
+	err := c.Find(bson.M{"id": id}).One(&result)
+
+	return result, err
 }

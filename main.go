@@ -13,8 +13,14 @@ const (
 )
 
 func main() {
+	session, err := repositories.GetMongoSession()
+	if err != nil {
+		log.Panicf("Cannot connect to database. Exiting...")
+	}
+	defer session.Close()
+
 	a := &handler.Assessment{
-		Repo: repositories.NewRepository(),
+		Repo: repositories.NewRepository(session),
 	}
 	handlers := handler.RegisterHandlers(a)
 
