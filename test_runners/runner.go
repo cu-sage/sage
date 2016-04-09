@@ -9,7 +9,7 @@ import (
 	"bitbucket.org/sage/utils"
 )
 
-type TestHandler func(test *models.Block, app *models.App) (bool, error)
+type TestHandler func(test *models.Block, app *models.App) (*models.TestResult, error)
 
 type TestRunner struct {
 	handlers map[string]TestHandler
@@ -38,20 +38,19 @@ func (tr *TestRunner) RunTest(test *models.Block, app *models.App) (*models.Test
 		return nil, fmt.Errorf("No handler for test %q", testType)
 	}
 
-	pass, err := testHandler(test.Value, app)
+	result, err := testHandler(test.Value, app)
 	if err != nil {
 		log.Printf("Error executing test: %q", err.Error())
 		return nil, err
 	}
 
-	var actions []string
-	if pass {
-		actions = processTriggerPass(test.Next)
+	if result.Pass {
+		result.Actions = processTriggerPass(test.Next)
 	} else {
-		actions = processTriggerFail(test.Next)
+		result.Actions = processTriggerFail(test.Next)
 	}
 
-	return &models.TestResult{Pass: pass, Actions: actions}, nil
+	return result, nil
 }
 
 func processTriggerPass(trigger *models.Block) []string {
@@ -77,7 +76,7 @@ func processTrigger(trigger *models.Block, triggerType string) []string {
 	return actions
 }
 
-func sprite(test *models.Block, app *models.App) (bool, error) {
+func sprite(test *models.Block, app *models.App) (*models.TestResult, error) {
 	spriteName := test.Field[0]
 
 	assertion := test.Value
@@ -90,17 +89,22 @@ func sprite(test *models.Block, app *models.App) (bool, error) {
 
 		sprite := getSprite(spriteName, app)
 
+        testResult := &models.TestResult{}
 		if should {
-			return sprite != nil, nil
-		}
+            testResult.Description = fmt.Sprintf("Sprite %q should be present", spriteName)
+			testResult.Pass = sprite != nil
+		} else {
+            testResult.Description = fmt.Sprintf("Sprite %q should not be present", spriteName)
+            testResult.Pass = sprite == nil
+        }
 
-		return sprite == nil, nil
+		return testResult, nil
 	}
 
-	return false, fmt.Errorf("Matcher type %q not found", matcher.Type)
+	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
 }
 
-func spriteTouchColor(test *models.Block, app *models.App) (bool, error) {
+func spriteTouchColor(test *models.Block, app *models.App) (*models.TestResult, error) {
 	spriteName := test.Field[0]
 	color := test.Field[1]
 
@@ -116,16 +120,25 @@ func spriteTouchColor(test *models.Block, app *models.App) (bool, error) {
 		if color == "red" {
 			colorCode = -15399425
 		}
+        
+        testResult := &models.TestResult{}
+        
+        if should {
+            testResult.Description = fmt.Sprintf("%q should touch color %q and move %q steps", spriteName, color, stepCount)
+        } else {
+            testResult.Description = fmt.Sprintf("%q should not touch color %q and move %q steps", spriteName, color, stepCount)
+        }
 
-		command := fmt.Sprintf("doIf touchingColor: %d forward: %d", colorCode, stepCount)
+		command := fmt.Sprintf("doIf touchingColor: %d forward: %s", colorCode, stepCount)
 
-		return findCommand(command, spriteName, should, app), nil
+		testResult.Pass = findCommand(command, spriteName, should, app)
+        return testResult, nil
 	}
 
-	return false, fmt.Errorf("Matcher type %q not found", matcher.Type)
+	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
 }
 
-func spriteTouchSprite(test *models.Block, app *models.App) (bool, error) {
+func spriteTouchSprite(test *models.Block, app *models.App) (*models.TestResult, error) {
 	sprite1 := test.Field[0]
 	sprite2 := test.Field[1]
 
@@ -135,23 +148,33 @@ func spriteTouchSprite(test *models.Block, app *models.App) (bool, error) {
 	matcher := assertion.Value
 
 	if matcher.Type == "matcher_say" {
+        testResult := &models.TestResult{}
+        
 		say := matcher.Field[0]
+        
+        if should {
+            testResult.Description = fmt.Sprintf("Sprite %q should touch sprite %q and say %q", sprite1, sprite2, say)
+        } else {
+            testResult.Description = fmt.Sprintf("Sprite %q should not touch sprite %q and say %q", sprite1, sprite2, say)
+        }
 
 		command := fmt.Sprintf("touching: %s say:duration:elapsed:from: %s", sprite2, say)
-		found := findCommand(command, sprite1, should, app)
+		testResult.Pass = findCommand(command, sprite1, should, app)
 
-		if found {
-			return true, nil
+		if testResult.Pass {
+			return testResult, nil
 		}
 
 		command = fmt.Sprintf("touching: %s say:duration:elapsed:from: %s", sprite1, say)
-		return findCommand(command, sprite2, should, app), nil
+		testResult.Pass = findCommand(command, sprite2, should, app)
+        
+        return testResult, nil
 	}
 
-	return false, fmt.Errorf("Matcher type %q not found", matcher.Type)
+	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
 }
 
-func whenKeyPressed(test *models.Block, app *models.App) (bool, error) {
+func whenKeyPressed(test *models.Block, app *models.App) (*models.TestResult, error) {
 	keyPressed := test.Field[0]
 	sprite := test.Field[1]
 
@@ -174,15 +197,24 @@ func whenKeyPressed(test *models.Block, app *models.App) (bool, error) {
 		case "direction_up":
 			heading = 0
 		default:
-			return false, utils.LogAndReturnError("Direction %q not found", direction)
+			return nil, utils.LogAndReturnError("Direction %q not found", direction)
 		}
+
+        testResult := &models.TestResult{}
+        
+        if should {
+            testResult.Description = fmt.Sprintf("When key %q is pressed, the sprite %q should point in direction %d", keyPressed, sprite, heading)
+        } else {
+            testResult.Description = fmt.Sprintf("When key %q is pressed, the sprite %q should not point in direction %d", keyPressed, sprite, heading)
+        }
 
 		command := fmt.Sprintf("whenKeyPressed %s heading: %d", keyPressed, heading)
 
-		return findCommand(command, sprite, should, app), nil
+		testResult.Pass = findCommand(command, sprite, should, app)
+        return testResult, nil
 	}
 
-	return false, fmt.Errorf("Matcher type %q not found", matcher.Type)
+	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
 }
 
 func findCommand(command string, spriteName string, should bool, app *models.App) bool {

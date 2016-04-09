@@ -1,6 +1,7 @@
 package models
 
 type TestResult struct {
-	Pass    bool
-	Actions []string
+	Pass    bool `json:"pass"`
+    Description string `json:"description"`
+	Actions []string `json:"actions"`
 }
