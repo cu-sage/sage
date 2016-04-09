@@ -5,11 +5,11 @@ import "github.com/gorilla/mux"
 func RegisterHandlers(a *Assessment) *mux.Router {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/assessment", a.PostAssessment).
+	r.HandleFunc("/assessments/{aid}", a.PostAssessment).
 		Methods("POST")
-	r.HandleFunc("/project", a.PostProject).
+	r.HandleFunc("/students/{sid}/assignments/{aid}", a.PostProject).
 		Methods("POST")
-	r.HandleFunc("/project/{projectID}/assessment/{assessmentID}", a.GetAssessment).
+	r.HandleFunc("/students/{sid}/assessments/{aid}/results", a.GetAssessment).
 		Methods("GET")
 
 	return r

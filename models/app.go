@@ -3,7 +3,9 @@ package models
 import "fmt"
 
 type App struct {
-	ID      string
+	StudentID       string
+    AssignmentID    string
+    TimeSubmitted   int64
 	Sprites []*Sprite
 }
 

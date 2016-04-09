@@ -7,7 +7,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"bitbucket.org/sage/models"
-	"github.com/satori/go.uuid"
 )
 
 type Repository struct {
@@ -21,8 +20,6 @@ func NewRepository(session *mgo.Session) *Repository {
 }
 
 func (r *Repository) SaveApp(app *models.App) error {
-	app.ID = uuid.NewV4().String()
-
 	s := r.session.Copy()
 	c := s.DB(dbName).C(projectCollection)
 	defer s.Close()
@@ -36,8 +33,6 @@ func (r *Repository) SaveApp(app *models.App) error {
 }
 
 func (r *Repository) SaveAssessment(ts *models.TestSuite) error {
-	ts.ID = uuid.NewV4().String()
-
 	s := r.session.Copy()
 	c := s.DB(dbName).C(assessmentCollection)
 	defer s.Close()
@@ -50,13 +45,15 @@ func (r *Repository) SaveAssessment(ts *models.TestSuite) error {
 	return err
 }
 
-func (r *Repository) GetApp(id string) (models.App, error) {
+func (r *Repository) GetLatestAssignmentFromStudent(sid, aid string) (models.App, error) {
 	s := r.session.Copy()
 	c := s.DB(dbName).C(projectCollection)
 	defer s.Close()
+    
+    log.Printf("studentid: %s, assignmentid: %s\n", sid, aid)
 
 	var result models.App
-	err := c.Find(bson.M{"id": id}).One(&result)
+	err := c.Find(bson.M{"studentid": sid, "assignmentid": aid}).Sort("-timesubmitted").One(&result)
 
 	return result, err
 }

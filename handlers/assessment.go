@@ -15,6 +15,7 @@ import (
 	"bitbucket.org/sage/repositories"
 	"bitbucket.org/sage/test_runners"
 	"bitbucket.org/sage/utils"
+	"time"
 )
 
 type Assessment struct {
@@ -28,7 +29,7 @@ func (a *Assessment) PostAssessment(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, err)
 		return
 	}
-
+    
 	var testSuite models.TestSuite
 	err = xml.Unmarshal(body, &testSuite)
 	if err != nil {
@@ -36,6 +37,9 @@ func (a *Assessment) PostAssessment(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, err)
 		return
 	}
+    
+    vars := mux.Vars(r)
+    testSuite.ID = vars["aid"]
 
 	err = a.Repo.SaveAssessment(&testSuite)
 	if err != nil {
@@ -69,6 +73,11 @@ func (a *Assessment) PostProject(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, err)
 		return
 	}
+    
+    vars := mux.Vars(r)
+    app.StudentID = vars["sid"]
+    app.AssignmentID = vars["aid"]
+    app.TimeSubmitted = time.Now().Unix()
 
 	err = a.Repo.SaveApp(app)
 	if err != nil {
@@ -77,21 +86,22 @@ func (a *Assessment) PostProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusAccepted, models.PostResult{ID: app.ID})
+	utils.WriteJSON(w, http.StatusAccepted, models.PostResult{ID: app.StudentID})
 }
 
 func (a *Assessment) GetAssessment(w http.ResponseWriter, r *http.Request) {
-	projectID := mux.Vars(r)["projectID"]
-	assessmentID := mux.Vars(r)["assessmentID"]
+    vars := mux.Vars(r)
+	sid := vars["sid"]
+	aid := vars["aid"]
 
-	project, err := a.Repo.GetApp(projectID)
+	assignment, err := a.Repo.GetLatestAssignmentFromStudent(sid, aid)
 	if err != nil {
 		log.Printf("Error retrieving project: %s\n", err.Error())
 		utils.WriteError(w, err)
 		return
 	}
 
-	assessment, err := a.Repo.GetAssessment(assessmentID)
+	assessment, err := a.Repo.GetAssessment(aid)
 	if err != nil {
 		log.Printf("Error retrieving assessment: %s\n", err.Error())
 		utils.WriteError(w, err)
@@ -101,7 +111,7 @@ func (a *Assessment) GetAssessment(w http.ResponseWriter, r *http.Request) {
 	testRunner := test_runner.NewTestRunner()
 	results := []*models.TestResult{}
 	for _, test := range assessment.TestCases {
-		result, err := testRunner.RunTest(test, &project)
+		result, err := testRunner.RunTest(test, &assignment)
 		if err != nil {
 			log.Printf("Error running test: %s", err.Error())
 		}
