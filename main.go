@@ -6,6 +6,8 @@ import (
 
 	"bitbucket.org/sage/handlers"
 	"bitbucket.org/sage/repositories"
+    
+    "github.com/gorilla/handlers"
 )
 
 const (
@@ -22,8 +24,15 @@ func main() {
 	a := &handler.Assessment{
 		Repo: repositories.NewRepository(session),
 	}
-	handlers := handler.RegisterHandlers(a)
+	r := handler.RegisterHandlers(a)
 
 	log.Printf("Listening on port %s\n", port)
-	log.Fatal(http.ListenAndServe(port, handlers))
+    
+    allowedHeaders := []string{"Content-Type"}
+    allowedMethods := []string{"POST", "GET", "OPTIONS"}
+	log.Fatal(http.ListenAndServe(port,
+        handlers.CORS(
+            handlers.AllowedMethods(allowedMethods),
+            handlers.AllowedHeaders(allowedHeaders),
+            )(r)))
 }
