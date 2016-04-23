@@ -24,10 +24,10 @@ type Assessment struct {
 	Runner *runners.TestRunner
 }
 
-func NewAssessmentHandler(repo *repositories.Repository) *Assessment {
+func NewAssessmentHandler(repo *repositories.Repository, plugins *models.PluginConfig) *Assessment {
 	return &Assessment{
 		Repo:   repo,
-		Runner: runners.NewTestRunner(),
+		Runner: runners.NewTestRunner(plugins),
 	}
 }
 

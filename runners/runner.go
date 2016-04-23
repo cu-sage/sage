@@ -15,7 +15,7 @@ type TestRunner struct {
 	handlers map[string]TestHandler
 }
 
-func NewTestRunner() *TestRunner {
+func NewTestRunner(pluginConfig *models.PluginConfig) *TestRunner {
 	return &TestRunner{
 		handlers: map[string]TestHandler{
 			"actual_sprite":              sprite,

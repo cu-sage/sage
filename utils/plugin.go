@@ -26,7 +26,5 @@ func ReadPluginConfig(path string) *models.PluginConfig {
 		log.Printf("Unable to decode plugin config at %q: %s\n", path, err.Error())
 	}
 
-	log.Printf("Debug print: %+v\n", pluginConfig)
-
 	return pluginConfig
 }

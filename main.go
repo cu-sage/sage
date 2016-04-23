@@ -22,10 +22,9 @@ func main() {
 	}
 	defer session.Close()
 
-	utils.ReadPluginConfig("plugins.json")
-
 	a := handlers.NewAssessmentHandler(
 		repositories.NewRepository(session),
+		utils.ReadPluginConfig("plugins.json"),
 	)
 
 	r := handlers.RegisterHandlers(a)
