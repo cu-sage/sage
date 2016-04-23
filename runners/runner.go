@@ -1,8 +1,12 @@
 package runners
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"strings"
 
 	"bitbucket.org/sage/models"
@@ -12,7 +16,8 @@ import (
 type TestHandler func(test *models.Block, app *models.App) (*models.TestResult, error)
 
 type TestRunner struct {
-	handlers map[string]TestHandler
+	handlers       map[string]TestHandler
+	pluginHandlers map[string]string
 }
 
 func NewTestRunner(pluginConfig *models.PluginConfig) *TestRunner {
@@ -23,6 +28,7 @@ func NewTestRunner(pluginConfig *models.PluginConfig) *TestRunner {
 			"actual_sprite_touch_sprite": spriteTouchSprite,
 			"actual_key_pressed":         whenKeyPressed,
 		},
+		pluginHandlers: parsePluginConfig(pluginConfig),
 	}
 }
 
@@ -33,24 +39,106 @@ func (tr *TestRunner) RunTest(test *models.Block, app *models.App) (*models.Test
 	}
 
 	testType := test.Value.Type
-	testHandler, prs := tr.handlers[test.Value.Type]
-	if !prs {
-		return nil, fmt.Errorf("No handler for test %q", testType)
+	var testResult *models.TestResult
+	var err error
+
+	pluginHandler, prs := tr.getPluginHandler(testType)
+	if prs {
+		testResult, err = runPluginHandler(pluginHandler, test.Value, app)
+	} else {
+		nativeHandler, prs := tr.getNativeHandler(testType)
+
+		if !prs {
+			return nil, fmt.Errorf("No handler for test %q", testType)
+		}
+
+		testResult, err = nativeHandler(test.Value, app)
 	}
 
-	result, err := testHandler(test.Value, app)
 	if err != nil {
 		log.Printf("Error executing test: %q", err.Error())
 		return nil, err
 	}
 
-	if result.Pass {
-		result.Actions = processTriggerPass(test.Next)
+	if testResult.Pass {
+		testResult.Actions = processTriggerPass(test.Next)
 	} else {
-		result.Actions = processTriggerFail(test.Next)
+		testResult.Actions = processTriggerFail(test.Next)
 	}
 
-	return result, nil
+	return testResult, nil
+}
+
+func (tr *TestRunner) getPluginHandler(testType string) (string, bool) {
+	handler, prs := tr.pluginHandlers[testType]
+	return handler, prs
+}
+
+func (tr *TestRunner) getNativeHandler(testType string) (TestHandler, bool) {
+	handler, prs := tr.handlers[testType]
+	return handler, prs
+}
+
+func runPluginHandler(handler string, test *models.Block, app *models.App) (*models.TestResult, error) {
+	pluginRequest := &models.PluginRequest{
+		Test: test,
+		App:  app,
+	}
+
+	jsonBody, err := json.Marshal(pluginRequest)
+	if err != nil {
+		log.Printf("Error marshalling pluging request: %s\n", err.Error())
+		return nil, err
+	}
+
+	log.Printf("Calling handler at %q\n", handler)
+
+	client := http.Client{}
+	resp, err := client.Post(handler, "application/json", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		log.Printf("Error sending plugin request to handler at %q: %s\n", handler, err.Error())
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Received unexpected HTTP response code from handler: %d\n", resp.StatusCode)
+		return nil, fmt.Errorf("Unexpected HTTP response code from handler: %d", resp.StatusCode)
+	}
+
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error reading HTTP response body from handler: %s\n", err.Error())
+		return nil, err
+	}
+	resp.Body.Close()
+
+	var testResult *models.TestResult
+	err = json.Unmarshal(responseBody, testResult)
+	if err != nil {
+		log.Printf("Error unmarshalling HTTP response body from handler: %s\n", err.Error())
+		return nil, err
+	}
+
+	return testResult, nil
+}
+
+func parsePluginConfig(pluginConfig *models.PluginConfig) map[string]string {
+	m := make(map[string]string)
+
+	for _, plugin := range pluginConfig.Plugins {
+		ptype := plugin.Type
+		phandler := plugin.Handler
+
+		_, prs := m[ptype]
+		if prs {
+			log.Printf("Cannot have multiple plugins defined for %q. Only using first plugin defined\n", ptype)
+			continue
+		}
+
+		m[ptype] = phandler
+	}
+
+	return m
 }
 
 func processTriggerPass(trigger *models.Block) []string {
