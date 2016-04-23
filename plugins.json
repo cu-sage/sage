@@ -1,0 +1,8 @@
+{
+    "plugins": [
+        {
+            "type": "actual_sprite",
+            "handler": "http://localhost:8081/actual_sprite"            
+        }
+    ]
+}

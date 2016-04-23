@@ -1,4 +1,4 @@
-package test_runner
+package runners
 
 import (
 	"fmt"
@@ -89,14 +89,14 @@ func sprite(test *models.Block, app *models.App) (*models.TestResult, error) {
 
 		sprite := getSprite(spriteName, app)
 
-        testResult := &models.TestResult{}
+		testResult := &models.TestResult{}
 		if should {
-            testResult.Description = fmt.Sprintf("Sprite %q should be present", spriteName)
+			testResult.Description = fmt.Sprintf("Sprite %q should be present", spriteName)
 			testResult.Pass = sprite != nil
 		} else {
-            testResult.Description = fmt.Sprintf("Sprite %q should not be present", spriteName)
-            testResult.Pass = sprite == nil
-        }
+			testResult.Description = fmt.Sprintf("Sprite %q should not be present", spriteName)
+			testResult.Pass = sprite == nil
+		}
 
 		return testResult, nil
 	}
@@ -120,19 +120,19 @@ func spriteTouchColor(test *models.Block, app *models.App) (*models.TestResult, 
 		if color == "red" {
 			colorCode = -15399425
 		}
-        
-        testResult := &models.TestResult{}
-        
-        if should {
-            testResult.Description = fmt.Sprintf("%q should touch color %q and move %q steps", spriteName, color, stepCount)
-        } else {
-            testResult.Description = fmt.Sprintf("%q should not touch color %q and move %q steps", spriteName, color, stepCount)
-        }
+
+		testResult := &models.TestResult{}
+
+		if should {
+			testResult.Description = fmt.Sprintf("%q should touch color %q and move %q steps", spriteName, color, stepCount)
+		} else {
+			testResult.Description = fmt.Sprintf("%q should not touch color %q and move %q steps", spriteName, color, stepCount)
+		}
 
 		command := fmt.Sprintf("doIf touchingColor: %d forward: %s", colorCode, stepCount)
 
 		testResult.Pass = findCommand(command, spriteName, should, app)
-        return testResult, nil
+		return testResult, nil
 	}
 
 	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
@@ -148,15 +148,15 @@ func spriteTouchSprite(test *models.Block, app *models.App) (*models.TestResult,
 	matcher := assertion.Value
 
 	if matcher.Type == "matcher_say" {
-        testResult := &models.TestResult{}
-        
+		testResult := &models.TestResult{}
+
 		say := matcher.Field[0]
-        
-        if should {
-            testResult.Description = fmt.Sprintf("Sprite %q should touch sprite %q and say %q", sprite1, sprite2, say)
-        } else {
-            testResult.Description = fmt.Sprintf("Sprite %q should not touch sprite %q and say %q", sprite1, sprite2, say)
-        }
+
+		if should {
+			testResult.Description = fmt.Sprintf("Sprite %q should touch sprite %q and say %q", sprite1, sprite2, say)
+		} else {
+			testResult.Description = fmt.Sprintf("Sprite %q should not touch sprite %q and say %q", sprite1, sprite2, say)
+		}
 
 		command := fmt.Sprintf("touching: %s say:duration:elapsed:from: %s", sprite2, say)
 		testResult.Pass = findCommand(command, sprite1, should, app)
@@ -167,8 +167,8 @@ func spriteTouchSprite(test *models.Block, app *models.App) (*models.TestResult,
 
 		command = fmt.Sprintf("touching: %s say:duration:elapsed:from: %s", sprite1, say)
 		testResult.Pass = findCommand(command, sprite2, should, app)
-        
-        return testResult, nil
+
+		return testResult, nil
 	}
 
 	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
@@ -200,18 +200,18 @@ func whenKeyPressed(test *models.Block, app *models.App) (*models.TestResult, er
 			return nil, utils.LogAndReturnError("Direction %q not found", direction)
 		}
 
-        testResult := &models.TestResult{}
-        
-        if should {
-            testResult.Description = fmt.Sprintf("When key %q is pressed, the sprite %q should point in direction %d", keyPressed, sprite, heading)
-        } else {
-            testResult.Description = fmt.Sprintf("When key %q is pressed, the sprite %q should not point in direction %d", keyPressed, sprite, heading)
-        }
+		testResult := &models.TestResult{}
+
+		if should {
+			testResult.Description = fmt.Sprintf("When key %q is pressed, the sprite %q should point in direction %d", keyPressed, sprite, heading)
+		} else {
+			testResult.Description = fmt.Sprintf("When key %q is pressed, the sprite %q should not point in direction %d", keyPressed, sprite, heading)
+		}
 
 		command := fmt.Sprintf("whenKeyPressed %s heading: %d", keyPressed, heading)
 
 		testResult.Pass = findCommand(command, sprite, should, app)
-        return testResult, nil
+		return testResult, nil
 	}
 
 	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)

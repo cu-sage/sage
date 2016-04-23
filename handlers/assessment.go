@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"encoding/json"
@@ -10,16 +10,25 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"time"
+
 	"bitbucket.org/sage/models"
 	"bitbucket.org/sage/parsers"
 	"bitbucket.org/sage/repositories"
-	"bitbucket.org/sage/test_runners"
+	"bitbucket.org/sage/runners"
 	"bitbucket.org/sage/utils"
-	"time"
 )
 
 type Assessment struct {
-	Repo *repositories.Repository
+	Repo   *repositories.Repository
+	Runner *runners.TestRunner
+}
+
+func NewAssessmentHandler(repo *repositories.Repository) *Assessment {
+	return &Assessment{
+		Repo:   repo,
+		Runner: runners.NewTestRunner(),
+	}
 }
 
 func (a *Assessment) PostAssessment(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +38,7 @@ func (a *Assessment) PostAssessment(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, err)
 		return
 	}
-    
+
 	var testSuite models.TestSuite
 	err = xml.Unmarshal(body, &testSuite)
 	if err != nil {
@@ -37,9 +46,9 @@ func (a *Assessment) PostAssessment(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, err)
 		return
 	}
-    
-    vars := mux.Vars(r)
-    testSuite.ID = vars["aid"]
+
+	vars := mux.Vars(r)
+	testSuite.ID = vars["aid"]
 
 	err = a.Repo.SaveAssessment(&testSuite)
 	if err != nil {
@@ -73,11 +82,11 @@ func (a *Assessment) PostProject(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, err)
 		return
 	}
-    
-    vars := mux.Vars(r)
-    app.StudentID = vars["sid"]
-    app.AssignmentID = vars["aid"]
-    app.TimeSubmitted = time.Now().Unix()
+
+	vars := mux.Vars(r)
+	app.StudentID = vars["sid"]
+	app.AssignmentID = vars["aid"]
+	app.TimeSubmitted = time.Now().Unix()
 
 	err = a.Repo.SaveApp(app)
 	if err != nil {
@@ -90,7 +99,7 @@ func (a *Assessment) PostProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Assessment) GetAssessment(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
+	vars := mux.Vars(r)
 	sid := vars["sid"]
 	aid := vars["aid"]
 
@@ -108,10 +117,9 @@ func (a *Assessment) GetAssessment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	testRunner := test_runner.NewTestRunner()
 	results := []*models.TestResult{}
 	for _, test := range assessment.TestCases {
-		result, err := testRunner.RunTest(test, &assignment)
+		result, err := a.Runner.RunTest(test, &assignment)
 		if err != nil {
 			log.Printf("Error running test: %s", err.Error())
 		}
