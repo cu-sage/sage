@@ -1,8 +1,8 @@
 {
     "plugins": [
         {
-            "type": "actual_sprite",
-            "handler": "http://localhost:8081/actual_sprite"            
+            "type": "block_type",
+            "handler": "http://localhost:8081/block_type"            
         }
     ]
 }
