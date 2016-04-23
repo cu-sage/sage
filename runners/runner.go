@@ -141,23 +141,27 @@ func parsePluginConfig(pluginConfig *models.PluginConfig) map[string]string {
 	return m
 }
 
-func processTriggerPass(trigger *models.Block) []string {
+func processTriggerPass(trigger *models.Block) []models.Action {
 	return processTrigger(trigger, "trigger_pass")
 }
 
-func processTriggerFail(trigger *models.Block) []string {
+func processTriggerFail(trigger *models.Block) []models.Action {
 	return processTrigger(trigger, "trigger_fail")
 }
 
-func processTrigger(trigger *models.Block, triggerType string) []string {
-	var actions []string
+func processTrigger(trigger *models.Block, triggerType string) []models.Action {
+	var actions []models.Action
 	for ; trigger != nil; trigger = trigger.Next {
 		if trigger.Type == triggerType {
 			action := trigger.Value
 
-			if action.Type == "action_say" {
-				actions = append(actions, action.Field[0])
-			}
+			actions = append(
+				actions,
+				models.Action{
+					Type:    action.Type,
+					Command: action.Field[0],
+				},
+			)
 		}
 	}
 
