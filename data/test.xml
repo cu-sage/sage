@@ -1,4 +1,82 @@
 <xml xmlns="http://www.w3.org/1999/xhtml">
+  <block type="expect" id=",!jjz0cm)5Q7#Okhds`]" x="88" y="-262">
+    <value name="NAME">
+      <block type="actual_block_type" id="H?ZUEBbsp=.7tPX*tmCU">
+        <field name="NAME">Parallelization</field>
+        <value name="assert">
+          <block type="assert_should" id="{*=P.@?%9RXS1wFAR8]p">
+            <value name="matcher">
+              <block type="matcher_be_present" id="A^jD7kN|H@fD|-}P}pX["></block>
+            </value>
+          </block>
+        </value>
+      </block>
+    </value>
+  </block>
+  <block type="expect" id="OCO3mE+Qta|2ez5nmfY1" x="88" y="-212">
+    <value name="NAME">
+      <block type="actual_block_type" id="I-C1/~G7=M?kfeo^]1.6">
+        <field name="NAME">Sensing</field>
+        <value name="assert">
+          <block type="assert_should" id="T^0.fSVHgb5?U_tnjthg">
+            <value name="matcher">
+              <block type="matcher_be_present" id="C2BZNZ8V@1%G~9g8cO%C"></block>
+            </value>
+          </block>
+        </value>
+      </block>
+    </value>
+  </block>
+  <block type="expect" id="qvimp()mj;YWK[!m6IPP" x="88" y="-162">
+    <value name="NAME">
+      <block type="actual_block" id="f[LcSGNKL:rlyLXfX#Bh">
+        <field name="NAME">doIf</field>
+        <value name="assert">
+          <block type="assert_should" id="X*K~Of,1qb[mT4F9m(!M">
+            <value name="matcher">
+              <block type="matcher_be_present" id="qe=m%f5T4rq+VyR(IYTM"></block>
+            </value>
+          </block>
+        </value>
+      </block>
+    </value>
+    <next>
+      <block type="trigger_pass" id="=4]wsqTQv,qyMWm`B14n">
+        <value name="action">
+          <block type="action_block_include" id=",E|t/kZKbTb+!~^L;Ziy">
+            <field name="block_name">forever</field>
+          </block>
+        </value>
+        <next>
+          <block type="trigger_pass" id="s5dgCL-1HKL%BUvHR2u;">
+            <value name="action">
+              <block type="action_block_include" id="kGB{2.N5gPyA[|}|r@+1">
+                <field name="block_name">repeat until %b</field>
+              </block>
+            </value>
+            <next>
+              <block type="trigger_fail" id="a-rVbeXJdlpUY:S4(gB_">
+                <value name="action">
+                  <block type="action_block_exclude" id="Qas/#2ms{-Ij-Uk#cm.|">
+                    <field name="block_name">forever</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="trigger_fail" id="2#,zwJ{EOE*rCPTQ(/P!">
+                    <value name="action">
+                      <block type="action_block_exclude" id="Fm#YFZv2_D}}EKT9zirR">
+                        <field name="block_name">repeat until %b</field>
+                      </block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
   <block type="expect" id="A.Re_Lc4!}U~=f}UEYpG" x="88" y="13">
     <value name="NAME">
       <block type="actual_sprite" id="{XGT_w?!inG55-S/MkF_">
@@ -197,7 +275,7 @@
   <block type="expect" id="CQ?bk~5u_4sHl=Bc`^#D" x="88" y="613">
     <value name="NAME">
       <block type="actual_sprite_touch_color" id="kBM~+wo|sHfT^O~9)S:T">
-        <field name="key_sprite"></field>
+        <field name="key_sprite">Ball</field>
         <field name="color">red</field>
         <value name="assert">
           <block type="assert_should_not" id="?y/SRqBkzwP{d%gVE@]c">

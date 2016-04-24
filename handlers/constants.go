@@ -1,5 +1,5 @@
 package handlers
 
 const (
-	readLimit = 10000
+	readLimit = 100000
 )

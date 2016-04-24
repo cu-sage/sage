@@ -272,7 +272,7 @@ func blockType(test *models.Block, app *models.App) (*models.TestResult, error) 
 			return testResult, nil
 		}
 
-		blocks, prs := models.GetBlocksForType(blockTypeName)
+		blocks, prs := models.GetBlocksForType(strings.ToLower(blockTypeName))
 		if !prs {
 			return nil, fmt.Errorf("No blocks found for block type %q", blockTypeName)
 		}
