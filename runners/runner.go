@@ -27,6 +27,8 @@ func NewTestRunner(pluginConfig *models.PluginConfig) *TestRunner {
 			"actual_sprite_touch_color":  spriteTouchColor,
 			"actual_sprite_touch_sprite": spriteTouchSprite,
 			"actual_key_pressed":         whenKeyPressed,
+			"actual_block":               block,
+			"actual_block_type":          blockType,
 		},
 		pluginHandlers: parsePluginConfig(pluginConfig),
 	}
@@ -196,6 +198,118 @@ func sprite(test *models.Block, app *models.App) (*models.TestResult, error) {
 	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
 }
 
+func block(test *models.Block, app *models.App) (*models.TestResult, error) {
+	blockName := test.Field[0]
+
+	assertion := test.Value
+	should := assertion.Type == "assert_should"
+
+	matcher := assertion.Value
+
+	if matcher.Type == "matcher_be_present" {
+		log.Printf("Looking for block %q\n", blockName)
+
+		present, _ := isBlockPresent(blockName, app)
+		testResult := &models.TestResult{}
+
+		if should {
+			testResult.Description = fmt.Sprintf("Block %q should be present", blockName)
+
+			if present {
+				testResult.Pass = true
+			} else {
+				testResult.Pass = false
+			}
+		} else {
+			testResult.Description = fmt.Sprintf("Block %q should not be present", blockName)
+
+			if present {
+				testResult.Pass = false
+			} else {
+				testResult.Pass = true
+			}
+		}
+
+		return testResult, nil
+	}
+
+	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
+}
+
+func blockType(test *models.Block, app *models.App) (*models.TestResult, error) {
+	blockTypeName := test.Field[0]
+
+	assertion := test.Value
+	should := assertion.Type == "assert_should"
+
+	matcher := assertion.Value
+
+	if matcher.Type == "matcher_be_present" {
+		log.Printf("Looking for block type %q\n", blockTypeName)
+
+		if strings.EqualFold(blockTypeName, "parallelization") {
+			_, count := isBlockPresent("whenGreenFlag", app)
+
+			testResult := &models.TestResult{}
+			if should {
+				testResult.Description = "Application should have parallelization"
+
+				if count > 1 {
+					testResult.Pass = true
+				} else {
+					testResult.Pass = false
+				}
+			} else {
+				testResult.Description = "Application should not have parallelization"
+
+				if count > 1 {
+					testResult.Pass = false
+				} else {
+					testResult.Pass = true
+				}
+			}
+
+			return testResult, nil
+		}
+
+		blocks, prs := models.GetBlocksForType(blockTypeName)
+		if !prs {
+			return nil, fmt.Errorf("No blocks found for block type %q", blockTypeName)
+		}
+
+		present := false
+		for _, block := range blocks {
+			present, _ = isBlockPresent(block, app)
+			if present {
+				break
+			}
+		}
+
+		testResult := &models.TestResult{}
+		if should {
+			testResult.Description = fmt.Sprintf("Block type %q should be present", blockTypeName)
+
+			if present {
+				testResult.Pass = true
+			} else {
+				testResult.Pass = false
+			}
+		} else {
+			testResult.Description = fmt.Sprintf("Block type %q should not be present", blockTypeName)
+
+			if present {
+				testResult.Pass = false
+			} else {
+				testResult.Pass = true
+			}
+		}
+
+		return testResult, nil
+	}
+
+	return nil, fmt.Errorf("Matcher type %q not found", matcher.Type)
+}
+
 func spriteTouchColor(test *models.Block, app *models.App) (*models.TestResult, error) {
 	spriteName := test.Field[0]
 	color := test.Field[1]
@@ -338,4 +452,19 @@ func getSprite(name string, app *models.App) *models.Sprite {
 	}
 
 	return nil
+}
+
+func isBlockPresent(blockName string, app *models.App) (bool, int) {
+	present := false
+	count := 0
+	for _, sprite := range app.Sprites {
+		for _, script := range sprite.Scripts {
+			if strings.Contains(script, blockName) {
+				present = true
+				count++
+			}
+		}
+	}
+
+	return present, count
 }
