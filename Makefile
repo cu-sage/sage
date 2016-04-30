@@ -6,6 +6,7 @@ test:
 	go test ./...
 
 docker:
+	echo $(USER)
 	docker build -t sage-assess:$(BUILD_NUMBER) .
 
 deploy:
