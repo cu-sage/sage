@@ -12,4 +12,4 @@ docker:
 deploy:
 	-docker stop sage
 	-docker rm sage
-	docker run -p 8081:8080 --name sage --net sagenetwork -d sage-assess:$(DEPLOY_TAG)	
+	docker run -p 8081:8081 --name sage --net sagenetwork -d sage-assess:$(DEPLOY_TAG)	
