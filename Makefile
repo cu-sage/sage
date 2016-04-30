@@ -1,0 +1,6 @@
+build:
+	go get ./...
+	go build -o bin/sage
+
+test:
+	go test ./...
