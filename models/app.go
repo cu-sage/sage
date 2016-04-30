@@ -3,10 +3,11 @@ package models
 import "fmt"
 
 type App struct {
-	StudentID       string
-    AssignmentID    string
-    TimeSubmitted   int64
-	Sprites []*Sprite
+	StudentID     string
+	AssignmentID  string
+	TimeSubmitted int64
+	Sprites       []*Sprite
+	Original      string
 }
 
 func NewApp() *App {

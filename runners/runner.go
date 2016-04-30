@@ -84,7 +84,7 @@ func (tr *TestRunner) getNativeHandler(testType string) (TestHandler, bool) {
 func runPluginHandler(handler string, test *models.Block, app *models.App) (*models.TestResult, error) {
 	pluginRequest := &models.PluginRequest{
 		Test: test,
-		App:  app,
+		App:  &app.Original,
 	}
 
 	jsonBody, err := json.Marshal(pluginRequest)

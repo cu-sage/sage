@@ -83,6 +83,8 @@ func (a *Assessment) PostProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	app.Original = string(body)
+
 	vars := mux.Vars(r)
 	app.StudentID = vars["sid"]
 	app.AssignmentID = vars["aid"]
