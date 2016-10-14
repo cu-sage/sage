@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"bitbucket.org/sage/models"
-	"bitbucket.org/sage/utils"
+	"github.com/cu-sage/sage/models"
+	"github.com/cu-sage/sage/utils"
 )
 
 func ParseSB2(project models.SB2Project) (*models.App, error) {

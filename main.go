@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"bitbucket.org/sage/handlers"
-	"bitbucket.org/sage/repositories"
-	"bitbucket.org/sage/utils"
+	"github.com/cu-sage/sage/handlers"
+	"github.com/cu-sage/sage/repositories"
+	"github.com/cu-sage/sage/utils"
 
 	ghandlers "github.com/gorilla/handlers"
 )

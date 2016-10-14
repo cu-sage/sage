@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"bitbucket.org/sage/models"
+	"github.com/cu-sage/sage/models"
 )
 
 // WriteJSON writes an HTTP response with JSON

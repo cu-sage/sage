@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"bitbucket.org/sage/models"
+	"github.com/cu-sage/sage/models"
 )
 
 // ReadPluginConfig reads a config file at the given path

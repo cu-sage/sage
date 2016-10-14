@@ -6,7 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"bitbucket.org/sage/models"
+	"github.com/cu-sage/sage/models"
 )
 
 type Repository struct {
@@ -49,7 +49,7 @@ func (r *Repository) GetLatestAssignmentFromStudent(sid, aid string) (models.App
 	s := r.session.Copy()
 	c := s.DB(dbName).C(projectCollection)
 	defer s.Close()
-    
+
     log.Printf("studentid: %s, assignmentid: %s\n", sid, aid)
 
 	var result models.App

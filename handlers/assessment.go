@@ -12,11 +12,11 @@ import (
 
 	"time"
 
-	"bitbucket.org/sage/models"
-	"bitbucket.org/sage/parsers"
-	"bitbucket.org/sage/repositories"
-	"bitbucket.org/sage/runners"
-	"bitbucket.org/sage/utils"
+	"github.com/cu-sage/sage/models"
+	"github.com/cu-sage/sage/parsers"
+	"github.com/cu-sage/sage/repositories"
+	"github.com/cu-sage/sage/runners"
+	"github.com/cu-sage/sage/utils"
 )
 
 type Assessment struct {

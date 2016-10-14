@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	"bitbucket.org/sage/models"
-	"bitbucket.org/sage/utils"
+	"github.com/cu-sage/sage/models"
+	"github.com/cu-sage/sage/utils"
 )
 
 type TestHandler func(test *models.Block, app *models.App) (*models.TestResult, error)
