@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	host = "mongo"
+	host = "localhost:27017"
 )
 
 // GetMongoSession retuns a session to the Mongo database
